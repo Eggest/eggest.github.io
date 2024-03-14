@@ -25,17 +25,15 @@
 <p>我的服务器：<a href="myserver.html">我的mc服务器介绍</a></p>
 <p>头脑风暴主题曲下载：<a href="good.mp4">点这个</a></p>
 <p>动态时钟：<a href="clock.html">点这里</a></p>
-	<script type="text/javascript">
-		var x=0,y=0;
-		function MousePlace(){
-			x=window.event.x;
-			y=window.event.y;
-			document.getElementById('position').innerHTML="鼠标在当前页面中的坐标为：" + x + " " + y;
-		}
-		document.onmousemove=MousePlace;
-	</script>
-	<p>&nbsp;</p>
-<p>&nbsp;</p>
+<script type="text/javascript">
+	var x=0,y=0;
+	function MousePlace(){
+		x=window.event.x;
+		y=window.event.y;
+		document.getElementById('position').innerHTML="鼠标在当前页面中的坐标为：" + x + " " + y;
+	}
+	document.onmousemove=MousePlace;
+</script>
 
 </body>
 </html>

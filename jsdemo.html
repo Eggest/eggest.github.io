@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>一些JavaScript的小demo都会在这里展示</title>
+</head>
+
+<body>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.js"></script>
+	<script type="text/javascript">
+		var x=0,y=0;
+		function MousePlace(){
+			x=window.event.x;
+			y=window.event.y;
+			document.getElementById('position').innerHTML="鼠标在当前页面中的坐标为：" + x + " " + y;
+		}
+		document.onmousemove=MousePlace;
+	</script>
+	<br>
+	<script>
+		function onclickk(){
+			var ans1 = document.getElementById("textinput");
+			if (ans1.getElementsByClassName() == "goudangoudangoudandan"){
+				window.open("https://eggest.github.io/what.html")
+			}
+		}
+	</script>
+	<input type="text" id="textinput"/>
+	<button onclick="onclickk()">输入密码后点我</button>
+<!--	<input id="clickbutton"/>-->
+</body>
+</html>

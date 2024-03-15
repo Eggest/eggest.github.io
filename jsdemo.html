@@ -17,16 +17,33 @@
 		document.onmousemove=MousePlace;
 	</script>
 	<br>
-	<script>
+<!--	<script>
 		function onclickk(){
-			var ans1 = document.getElementById("textinput");
-			if (ans1.getElementsByClassName() == "goudangoudangoudandan"){
-				window.open("https://eggest.github.io/what.html")
+//			var ans1 = document.getElementById("textinput");
+//			if (ans1.getElementsByClassName() == "goudangoudangoudandan"){
+//				window.open("https://eggest.github.io/what.html")
+//			}
+			var a = document.getElementsByClassName(".textinput");
+			if (a == "goudangoudangoudandan"){
+				
 			}
 		}
 	</script>
-	<input type="text" id="textinput"/>
+	<input type="text" id="textinput" class="textinput"/>
 	<button onclick="onclickk()">输入密码后点我</button>
-<!--	<input id="clickbutton"/>-->
+<!--	<input id="clickbutton"/>
+-->
+	<script>
+		function pro(){
+//			var ans = document.getElementById("textinput");
+			if (document.getElementById("textinput").value == "eggest"){
+				window.open("https://eggest.github.io/what.html");
+			}
+//			document.write(ans.value);
+//			ans.value = "goudan";
+		}
+	</script>
+	<input id="textinput" type="text" >
+	<input type="button" value="输入密码后点我" onClick="pro()">
 </body>
 </html>

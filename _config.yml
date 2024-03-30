@@ -44,6 +44,8 @@ navigation:
     url: /MyBookShelf
   - name: 俄罗斯方块
     url: /elsblock
+  - name: 日记本
+    url: /journal
 
 # 每页的文章数
 paginate: 8

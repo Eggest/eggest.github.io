@@ -42,6 +42,8 @@ navigation:
     url: /tags
   - name: 书架
     url: /MyBookShelf
+  - name: 俄罗斯方块
+    url: /elsblock
 
 # 每页的文章数
 paginate: 8

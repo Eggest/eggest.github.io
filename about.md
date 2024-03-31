@@ -4,4 +4,8 @@ title: 关于
 permalink: /about/
 ---
 
-这是一个关于页面，请编辑about.md以介绍你的博客。
+Eggest，笔名狗蛋，姓名不告诉你
+
+本博客文章提供人：狗蛋
+
+俄罗斯方块提供人：GitHub用户[Chvin](https://www.github.com/chvin)的储存库[react-tetris](https://www.github.com/chvin/react-tetris)

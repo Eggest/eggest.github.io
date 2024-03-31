@@ -42,10 +42,10 @@ navigation:
     url: /tags
   - name: 书架
     url: /MyBookShelf
+  - name: 记事本
+    url: /MyNoteBook
   - name: 俄罗斯方块
     url: /elsblock
-  - name: 日记本
-    url: /journal
 
 # 每页的文章数
 paginate: 8

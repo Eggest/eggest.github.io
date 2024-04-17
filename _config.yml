@@ -61,7 +61,7 @@ footer-links:
   email: #youremailaddress@mail.com
   facebook: #https://www.facebook.com/<>
   flickr: #https://www.flickr.com/<>
-  github: https://github.com/Eggest/eggest.github.io #https://github.com/<>
+  github: Eggest/eggest.github.io #https://github.com/<>
   instagram: #https://instagram.com/<>
   linkedin: #https://www.linkedin.com/in/<>
   pinterest: #https://www.pinterest.com/<>
@@ -69,7 +69,7 @@ footer-links:
   stackoverflow: # http://stackoverflow.com/<>
   tumblr: # https://<username>.tumblr.com
   twitter: # https://www.twitter.com/<your_twitter_username> 
-  youtube: https://youtube.com/@eggest6973 # channel/<your_long_string> or user/<user-name>
+  youtube: @eggest6973 # channel/<your_long_string> or user/<user-name>
 
 # 站点页脚的文字
 footer-text: Copyright (c) 2024 from Eggest

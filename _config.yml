@@ -46,7 +46,8 @@ navigation:
     url: /MyNoteBook
   - name: 俄罗斯方块
     url: /elsblock
-
+  - name: mc投影分享
+    url: /Litematica
 # 每页的文章数
 paginate: 8
 

@@ -84,8 +84,8 @@ disqus: eggest #shortname
 
 # 输入Gitalk相关设定，即可添加评论区，具体请看教程
 gitalk:
-  clientID: fd1b65e5fcb464d7de4d
-  clientSecret: 8434fec88114d26dc93b91bcd298b0eee5b89c52
+  clientID: Ov23li3dohvqys0oPWLn
+  clientSecret: b11c2489b4156fb6e58811239ee3b09fae3811be
   repo: 
   owner: 
   proxy:

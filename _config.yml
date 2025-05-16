@@ -84,12 +84,13 @@ disqus: #shortname
 
 # 输入Gitalk相关设定，即可添加评论区，具体请看教程
 gitalk:
+  enable: true
   clientID: Ov23li3dohvqys0oPWLn
   clientSecret: b11c2489b4156fb6e58811239ee3b09fae3811be
   repo: 'eggest.github.io'
   owner: 'Eggest'
   admin: ['Eggest']
-  proxy:
+  createIssueManually: true
 
 # 输入Google Analytics web tracking code
 google_analytics:

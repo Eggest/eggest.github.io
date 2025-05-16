@@ -90,6 +90,7 @@ gitalk:
   repo: 'eggest.github.io'
   owner: 'Eggest'
   admin: ['Eggest']
+  lables: ['Eggest']
   createIssueManually: true
 
 # 输入Google Analytics web tracking code

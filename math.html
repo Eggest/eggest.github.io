@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实数统计计算器</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        light: '#f8fafc',
+                        dark: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none;
+            }
+            .card {
+                @apply bg-white rounded-lg shadow-card p-6 transition-all-300;
+            }
+            .card:hover {
+                @apply shadow-card-hover;
+            }
+            .btn {
+                @apply px-4 py-2 rounded-md font-medium transition-all-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+            }
+            .btn-primary {
+                @apply bg-primary text-white hover:bg-blue-600 focus:ring-blue-500;
+            }
+            .btn-secondary {
+                @apply bg-secondary text-white hover:bg-slate-600 focus:ring-slate-500;
+            }
+            .stat-value {
+                @apply text-2xl font-bold text-primary;
+            }
+            .stat-label {
+                @apply text-sm text-secondary uppercase tracking-wider;
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .pulse {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">实数统计计算器</h1>
+            <p class="text-gray-600">输入一组实数，获取排序结果和统计分析</p>
+        </header>
+
+        <!-- 主内容区 -->
+        <main>
+            <!-- 输入卡片 -->
+            <div class="card mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">数据输入</h2>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <div class="flex items-center">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa fa-pencil text-gray-400"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="numberInput" 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm input-focus"
+                                placeholder="请输入一组实数，以空格分隔（例如：1.5 2.7 3 4.2 5）"
+                            >
+                        </div>
+                        <p id="inputError" class="mt-1 text-sm text-danger hidden">
+                            <i class="fa fa-exclamation-circle mr-1"></i>
+                            <span>请输入有效的数字</span>
+                        </p>
+                    </div>
+                    <div class="flex justify-end">
+                        <button 
+                            id="calculateBtn" 
+                            class="btn btn-primary flex items-center"
+                        >
+                            <i class="fa fa-calculator mr-2"></i>
+                            计算统计结果
+                        </button>
+                        <button 
+                            id="clearBtn" 
+                            class="btn btn-secondary ml-3 flex items-center"
+                        >
+                            <i class="fa fa-trash mr-2"></i>
+                            清空
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结果区域 - 初始隐藏 -->
+            <div id="resultsSection" class="hidden space-y-8">
+                <!-- 排序结果卡片 -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">排序结果</h2>
+                    <div id="sortedNumbers" class="p-4 bg-gray-50 rounded-md border border-gray-200 min-h-[80px]">
+                        <!-- 排序结果将在这里显示 -->
+                    </div>
+                </div>
+
+                <!-- 统计指标卡片 - 新增方差 -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">统计指标</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                        <!-- 平均数 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">平均数</p>
+                            <p id="meanValue" class="stat-value">0.00</p>
+                        </div>
+                        <!-- 下四分位数 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">下四分位数</p>
+                            <p id="q1Value" class="stat-value">0.00</p>
+                        </div>
+                        <!-- 中位数 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">中位数</p>
+                            <p id="q2Value" class="stat-value">0.00</p>
+                        </div>
+                        <!-- 上四分位数 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">上四分位数</p>
+                            <p id="q3Value" class="stat-value">0.00</p>
+                        </div>
+                        <!-- 众数 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">众数</p>
+                            <p id="modeValue" class="stat-value">无</p>
+                        </div>
+                        <!-- 新增方差 -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                            <p class="stat-label">方差</p>
+                            <p id="varianceValue" class="stat-value">0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 可视化图表卡片 -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">数据可视化</h2>
+                    <div class="h-[300px]">
+                        <canvas id="dataChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 数据分布卡片 -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">数据分布</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号（排序后）</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数值</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">原始数组位置</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTable" class="bg-white divide-y divide-gray-200">
+                                <!-- 数据行将在这里动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>© 2025 实数统计计算器 | By lqz</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素 - 新增方差元素
+            const numberInput = document.getElementById('numberInput');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const inputError = document.getElementById('inputError');
+            const resultsSection = document.getElementById('resultsSection');
+            const sortedNumbers = document.getElementById('sortedNumbers');
+            const meanValue = document.getElementById('meanValue');
+            const q1Value = document.getElementById('q1Value');
+            const q2Value = document.getElementById('q2Value');
+            const q3Value = document.getElementById('q3Value');
+            const modeValue = document.getElementById('modeValue');
+            const varianceValue = document.getElementById('varianceValue'); // 方差显示元素
+            const dataTable = document.getElementById('dataTable');
+            
+            // 存储原始数组（用于记录原始位置）
+            let originalNumbers = [];
+            
+            // 图表实例
+            let dataChart = null;
+
+            // 计算按钮点击事件
+            calculateBtn.addEventListener('click', processInput);
+            
+            // 输入框回车事件
+            numberInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    processInput();
+                }
+            });
+            
+            // 清空按钮点击事件
+            clearBtn.addEventListener('click', function() {
+                numberInput.value = '';
+                inputError.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+                originalNumbers = [];
+                modeValue.textContent = '无';
+                varianceValue.textContent = '0.00'; // 重置方差显示
+                numberInput.focus();
+                
+                // 重置图表
+                if (dataChart) {
+                    dataChart.destroy();
+                    dataChart = null;
+                }
+            });
+
+            // 处理输入数据
+            function processInput() {
+                // 获取输入值并去除首尾空格
+                const input = numberInput.value.trim();
+                
+                // 检查输入是否为空
+                if (!input) {
+                    showError('请输入至少一个数字');
+                    return;
+                }
+                
+                // 分割输入字符串并转换为数字数组（保留原始顺序）
+                const numberStrings = input.split(/\s+/);
+                originalNumbers = [];
+                let hasError = false;
+                
+                for (const str of numberStrings) {
+                    const num = parseFloat(str);
+                    if (isNaN(num)) {
+                        hasError = true;
+                        break;
+                    }
+                    originalNumbers.push(num);
+                }
+                
+                // 检查是否有无效输入
+                if (hasError) {
+                    showError('请输入有效的数字，以空格分隔');
+                    return;
+                }
+                
+                // 隐藏错误提示
+                inputError.classList.add('hidden');
+                
+                // 处理数据并显示结果
+                processData([...originalNumbers]);
+            }
+
+            // 显示错误信息
+            function showError(message) {
+                inputError.querySelector('span').textContent = message;
+                inputError.classList.remove('hidden');
+                numberInput.classList.add('border-danger');
+                numberInput.classList.add('focus:ring-danger');
+                numberInput.classList.add('focus:border-danger');
+                
+                // 3秒后自动隐藏错误提示
+                setTimeout(() => {
+                    inputError.classList.add('hidden');
+                    numberInput.classList.remove('border-danger');
+                    numberInput.classList.remove('focus:ring-danger');
+                    numberInput.classList.remove('focus:border-danger');
+                }, 3000);
+            }
+
+            // 处理数据并计算统计指标 - 新增方差计算
+            function processData(numbers) {
+                // 排序数组
+                const sortedNumbersArray = [...numbers].sort((a, b) => a - b);
+                
+                // 计算统计指标
+                const mean = calculateMean(sortedNumbersArray);
+                const q1 = calculatePercentile(sortedNumbersArray, 25); // 下四分位数
+                const q2 = calculatePercentile(sortedNumbersArray, 50); // 中位数
+                const q3 = calculatePercentile(sortedNumbersArray, 75); // 上四分位数
+                const mode = calculateMode(sortedNumbersArray); // 众数
+                const variance = calculateVariance(sortedNumbersArray, mean); // 新增方差计算
+                
+                // 显示结果
+                displayResults(sortedNumbersArray, mean, q1, q2, q3, mode, variance);
+                
+                // 显示结果区域
+                resultsSection.classList.remove('hidden');
+                resultsSection.classList.add('fade-in');
+                
+                // 滚动到结果区域
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // 计算平均数
+            function calculateMean(numbers) {
+                return numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
+            }
+
+            // 计算百分位数
+            function calculatePercentile(numbers, percentile) {
+                const sorted = [...numbers];
+                const index = (percentile / 100) * (sorted.length - 1);
+                const lowerIndex = Math.floor(index);
+                const upperIndex = Math.ceil(index);
+                const weight = index - lowerIndex;
+                
+                if (upperIndex === lowerIndex) {
+                    return sorted[index];
+                }
+                
+                return sorted[lowerIndex] * (1 - weight) + sorted[upperIndex] * weight;
+            }
+
+            // 计算众数
+            function calculateMode(numbers) {
+                if (numbers.length === 0) return [];
+                
+                // 统计每个数字的出现次数（处理浮点数精度问题）
+                const frequencyMap = new Map();
+                const precision = 1000; // 精度：保留3位小数进行比较
+                
+                for (const num of numbers) {
+                    const key = Math.round(num * precision) / precision; // 统一精度
+                    frequencyMap.set(key, (frequencyMap.get(key) || 0) + 1);
+                }
+                
+                // 找出最大出现次数
+                let maxFrequency = 0;
+                for (const count of frequencyMap.values()) {
+                    if (count > maxFrequency) {
+                        maxFrequency = count;
+                    }
+                }
+                
+                // 如果所有数字出现次数相同（都是1次），则没有众数
+                if (maxFrequency === 1) return [];
+                
+                // 收集所有出现次数为最大值的数字（可能有多个众数）
+                const modes = [];
+                for (const [num, count] of frequencyMap.entries()) {
+                    if (count === maxFrequency) {
+                        modes.push(num);
+                    }
+                }
+                
+                return modes;
+            }
+
+            // 新增：计算方差（总体方差）
+            function calculateVariance(numbers, mean) {
+                // 方差公式：各数据与平均数差的平方的平均数
+                const n = numbers.length;
+                if (n <= 1) return 0; // 数据量小于等于1时，方差为0
+                
+                const squaredDifferences = numbers.map(num => Math.pow(num - mean, 2));
+                const sumOfSquares = squaredDifferences.reduce((sum, val) => sum + val, 0);
+                
+                // 总体方差（除以n），如果需要样本方差（除以n-1），可将n改为n-1
+                return sumOfSquares / n;
+            }
+
+            // 格式化数字：删除小数点后没必要的0
+            function formatNumber(num) {
+                // 如果是整数，返回整数形式；否则返回原始小数形式（自动去除末尾0）
+                return Number.isInteger(num) ? num.toString() : num.toString().replace(/\.?0*$/, '');
+            }
+
+            // 显示结果 - 新增方差显示
+            function displayResults(sortedNumbersArray, mean, q1, q2, q3, mode, variance) {
+                // 显示排序结果
+                sortedNumbers.innerHTML = `
+                    <div class="flex flex-wrap gap-2">
+                        ${sortedNumbersArray.map(num => 
+                            `<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">${formatNumber(num)}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                // 显示统计指标（保留必要的小数位，最多2位）
+                meanValue.textContent = formatNumber(parseFloat(mean.toFixed(2)));
+                q1Value.textContent = formatNumber(parseFloat(q1.toFixed(2)));
+                q2Value.textContent = formatNumber(parseFloat(q2.toFixed(2)));
+                q3Value.textContent = formatNumber(parseFloat(q3.toFixed(2)));
+                
+                // 显示众数
+                if (mode.length === 0) {
+                    modeValue.textContent = '无';
+                } else {
+                    modeValue.textContent = mode.map(num => formatNumber(num)).join('、');
+                }
+                
+                // 显示方差（保留2位小数后格式化）
+                varianceValue.textContent = formatNumber(parseFloat(variance.toFixed(2)));
+                
+                // 生成数据表格
+                generateDataTable(sortedNumbersArray);
+                
+                // 创建或更新图表
+                createOrUpdateChart(sortedNumbersArray, mean, q1, q2, q3);
+            }
+
+            // 生成数据表格
+            function generateDataTable(sortedNumbersArray) {
+                dataTable.innerHTML = '';
+                
+                sortedNumbersArray.forEach((num, sortedIndex) => {
+                    const row = document.createElement('tr');
+                    
+                    // 查找该数值在原始数组中的所有位置（支持重复值）
+                    const originalPositions = [];
+                    originalNumbers.forEach((originalNum, originalIndex) => {
+                        if (Math.abs(originalNum - num) < 0.001) { // 浮点数精度容错
+                            originalPositions.push(originalIndex + 1); // 位置从1开始计数
+                        }
+                    });
+                    
+                    // 格式化原始位置显示（多个位置用逗号分隔）
+                    const originalPosText = originalPositions.join(', ');
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${sortedIndex + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${formatNumber(num)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${originalPosText}</td>
+                    `;
+                    
+                    dataTable.appendChild(row);
+                });
+            }
+
+            // 创建或更新图表
+            function createOrUpdateChart(numbers, mean, q1, q2, q3) {
+                const ctx = document.getElementById('dataChart').getContext('2d');
+                
+                // 如果图表已存在，销毁它
+                if (dataChart) {
+                    dataChart.destroy();
+                }
+                
+                // 创建新图表
+                dataChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: numbers.map((_, i) => `排序后#${i + 1}`),
+                        datasets: [
+                            {
+                                label: '数值',
+                                data: numbers,
+                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: '平均数',
+                                data: Array(numbers.length).fill(mean),
+                                type: 'line',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                ticks: {
+                                    // 图表Y轴数值格式化
+                                    callback: function(value) {
+                                        return formatNumber(parseFloat(value.toFixed(2)));
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            annotation: {
+                                annotations: {
+                                    q1Line: {
+                                        type: 'line',
+                                        yMin: q1,
+                                        yMax: q1,
+                                        borderColor: 'rgba(16, 185, 129, 0.7)',
+                                        borderWidth: 2,
+                                        borderDash: [5, 5],
+                                        label: {
+                                            content: '下四分位数',
+                                            enabled: true,
+                                            position: 'end'
+                                        }
+                                    },
+                                    q2Line: {
+                                        type: 'line',
+                                        yMin: q2,
+                                        yMax: q2,
+                                        borderColor: 'rgba(245, 158, 11, 0.7)',
+                                        borderWidth: 2,
+                                        borderDash: [5, 5],
+                                        label: {
+                                            content: '中位数',
+                                            enabled: true,
+                                            position: 'end'
+                                        }
+                                    },
+                                    q3Line: {
+                                        type: 'line',
+                                        yMin: q3,
+                                        yMax: q3,
+                                        borderColor: 'rgba(107, 33, 168, 0.7)',
+                                        borderWidth: 2,
+                                        borderDash: [5, 5],
+                                        label: {
+                                            content: '上四分位数',
+                                            enabled: true,
+                                            position: 'end'
+                                        }
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += formatNumber(parseFloat(context.parsed.y.toFixed(2)));
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 为输入框添加焦点效果
+            numberInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+            });
+            
+            numberInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+            });
+
+            // 页面加载时，输入框自动获取焦点
+            numberInput.focus();
+        });
+    </script>
+</body>
+</html>

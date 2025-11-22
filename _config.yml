@@ -48,6 +48,8 @@ navigation:
     url: /elsblock
   - name: mc投影分享
     url: /Litematica
+  - name: 八上数据分析计算器
+    url: /math.html
 # 每页的文章数
 paginate: 8
 

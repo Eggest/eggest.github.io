@@ -145,10 +145,10 @@
                     </div>
                 </div>
 
-                <!-- 统计指标卡片 - 新增方差 -->
+                <!-- 统计指标卡片 -->
                 <div class="card">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">统计指标</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <!-- 平均数 -->
                         <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
                             <p class="stat-label">平均数</p>
@@ -168,16 +168,6 @@
                         <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
                             <p class="stat-label">上四分位数</p>
                             <p id="q3Value" class="stat-value">0.00</p>
-                        </div>
-                        <!-- 众数 -->
-                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
-                            <p class="stat-label">众数</p>
-                            <p id="modeValue" class="stat-value">无</p>
-                        </div>
-                        <!-- 新增方差 -->
-                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
-                            <p class="stat-label">方差</p>
-                            <p id="varianceValue" class="stat-value">0.00</p>
                         </div>
                     </div>
                 </div>
@@ -220,7 +210,7 @@
     <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取DOM元素 - 新增方差元素
+            // 获取DOM元素
             const numberInput = document.getElementById('numberInput');
             const calculateBtn = document.getElementById('calculateBtn');
             const clearBtn = document.getElementById('clearBtn');
@@ -231,8 +221,6 @@
             const q1Value = document.getElementById('q1Value');
             const q2Value = document.getElementById('q2Value');
             const q3Value = document.getElementById('q3Value');
-            const modeValue = document.getElementById('modeValue');
-            const varianceValue = document.getElementById('varianceValue'); // 方差显示元素
             const dataTable = document.getElementById('dataTable');
             
             // 存储原始数组（用于记录原始位置）
@@ -257,8 +245,6 @@
                 inputError.classList.add('hidden');
                 resultsSection.classList.add('hidden');
                 originalNumbers = [];
-                modeValue.textContent = '无';
-                varianceValue.textContent = '0.00'; // 重置方差显示
                 numberInput.focus();
                 
                 // 重置图表
@@ -323,7 +309,7 @@
                 }, 3000);
             }
 
-            // 处理数据并计算统计指标 - 新增方差计算
+            // 处理数据并计算统计指标
             function processData(numbers) {
                 // 排序数组
                 const sortedNumbersArray = [...numbers].sort((a, b) => a - b);
@@ -333,11 +319,9 @@
                 const q1 = calculatePercentile(sortedNumbersArray, 25); // 下四分位数
                 const q2 = calculatePercentile(sortedNumbersArray, 50); // 中位数
                 const q3 = calculatePercentile(sortedNumbersArray, 75); // 上四分位数
-                const mode = calculateMode(sortedNumbersArray); // 众数
-                const variance = calculateVariance(sortedNumbersArray, mean); // 新增方差计算
                 
                 // 显示结果
-                displayResults(sortedNumbersArray, mean, q1, q2, q3, mode, variance);
+                displayResults(sortedNumbersArray, mean, q1, q2, q3);
                 
                 // 显示结果区域
                 resultsSection.classList.remove('hidden');
@@ -352,67 +336,26 @@
                 return numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
             }
 
-            // 计算百分位数
+            // 计算百分位数 - 使用修复后的Excel兼容计算方法
             function calculatePercentile(numbers, percentile) {
                 const sorted = [...numbers];
-                const index = (percentile / 100) * (sorted.length - 1);
-                const lowerIndex = Math.floor(index);
-                const upperIndex = Math.ceil(index);
-                const weight = index - lowerIndex;
+                const n = sorted.length;
+                
+                // 使用Excel/Excel兼容的四分位数计算方法
+                // 对于Q1 (25%)，位置 = 1 + (n - 1) * 0.25
+                // 对于Q2 (50%)，位置 = 1 + (n - 1) * 0.5
+                // 对于Q3 (75%)，位置 = 1 + (n - 1) * 0.75
+                const position = 1 + (n - 1) * (percentile / 100);
+                const lowerIndex = Math.floor(position) - 1; // 转换为0-based索引
+                const upperIndex = Math.ceil(position) - 1;
+                const weight = position - Math.floor(position);
                 
                 if (upperIndex === lowerIndex) {
-                    return sorted[index];
+                    return sorted[lowerIndex];
                 }
                 
+                // 线性插值
                 return sorted[lowerIndex] * (1 - weight) + sorted[upperIndex] * weight;
-            }
-
-            // 计算众数
-            function calculateMode(numbers) {
-                if (numbers.length === 0) return [];
-                
-                // 统计每个数字的出现次数（处理浮点数精度问题）
-                const frequencyMap = new Map();
-                const precision = 1000; // 精度：保留3位小数进行比较
-                
-                for (const num of numbers) {
-                    const key = Math.round(num * precision) / precision; // 统一精度
-                    frequencyMap.set(key, (frequencyMap.get(key) || 0) + 1);
-                }
-                
-                // 找出最大出现次数
-                let maxFrequency = 0;
-                for (const count of frequencyMap.values()) {
-                    if (count > maxFrequency) {
-                        maxFrequency = count;
-                    }
-                }
-                
-                // 如果所有数字出现次数相同（都是1次），则没有众数
-                if (maxFrequency === 1) return [];
-                
-                // 收集所有出现次数为最大值的数字（可能有多个众数）
-                const modes = [];
-                for (const [num, count] of frequencyMap.entries()) {
-                    if (count === maxFrequency) {
-                        modes.push(num);
-                    }
-                }
-                
-                return modes;
-            }
-
-            // 新增：计算方差（总体方差）
-            function calculateVariance(numbers, mean) {
-                // 方差公式：各数据与平均数差的平方的平均数
-                const n = numbers.length;
-                if (n <= 1) return 0; // 数据量小于等于1时，方差为0
-                
-                const squaredDifferences = numbers.map(num => Math.pow(num - mean, 2));
-                const sumOfSquares = squaredDifferences.reduce((sum, val) => sum + val, 0);
-                
-                // 总体方差（除以n），如果需要样本方差（除以n-1），可将n改为n-1
-                return sumOfSquares / n;
             }
 
             // 格式化数字：删除小数点后没必要的0
@@ -421,8 +364,8 @@
                 return Number.isInteger(num) ? num.toString() : num.toString().replace(/\.?0*$/, '');
             }
 
-            // 显示结果 - 新增方差显示
-            function displayResults(sortedNumbersArray, mean, q1, q2, q3, mode, variance) {
+            // 显示结果
+            function displayResults(sortedNumbersArray, mean, q1, q2, q3) {
                 // 显示排序结果
                 sortedNumbers.innerHTML = `
                     <div class="flex flex-wrap gap-2">
@@ -437,16 +380,6 @@
                 q1Value.textContent = formatNumber(parseFloat(q1.toFixed(2)));
                 q2Value.textContent = formatNumber(parseFloat(q2.toFixed(2)));
                 q3Value.textContent = formatNumber(parseFloat(q3.toFixed(2)));
-                
-                // 显示众数
-                if (mode.length === 0) {
-                    modeValue.textContent = '无';
-                } else {
-                    modeValue.textContent = mode.map(num => formatNumber(num)).join('、');
-                }
-                
-                // 显示方差（保留2位小数后格式化）
-                varianceValue.textContent = formatNumber(parseFloat(variance.toFixed(2)));
                 
                 // 生成数据表格
                 generateDataTable(sortedNumbersArray);
